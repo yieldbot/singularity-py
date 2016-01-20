@@ -71,10 +71,18 @@ class Client(object):
         elif type in ['pending', 'cleanup']:
             url = '{0}/api/requests/queued/{1}'.format(self.url, type)
         else:
-            url = '{0}/api/requests/paused'.format(self.url, type)
+            url = '{0}/api/requests/{1}'.format(self.url, type)
         return _response(self.session.get(url))
 
     # deploys api
     def create_deploy(self, deploy):
         url = '{0}/api/deploys'.format(self.url)
         return _response(self.session.post(url, data=json.dumps({'deploy': deploy})))
+
+    # tasks api
+    def get_tasks(self, type, slave_id):
+        url = '{0}/api/tasks/{1}'.format(self.url, type)
+        if type == 'active' and slave_id:
+            url = '{0}/slave/{1}'.format(url, slave_id)
+        return _response(self.session.get(url))
+

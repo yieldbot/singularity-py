@@ -61,8 +61,7 @@ def request_bounce(ctx, request_id):
         click.echo('bounced request {0}'.format(request_id))
 
 @cli.command(name='get')
-@click.option('--request-id', '-r', help='Request Id')
-@click.option('--type', '-t', default='all', type=click.Choice(['pending', 'cleanup', 'paused', 'finished', 'cooldown', 'active', 'all']), help='Request type to get')
+@click.argument('request-id')
 @click.option('--json', '-j', is_flag=True, help='Enable json output')
 @click.pass_context
 def request_get(ctx, request_id, type, json):
@@ -72,12 +71,6 @@ def request_get(ctx, request_id, type, json):
             click.echo(dumps(res, indent=2))
         else:
             output_request(res)
-    else:
-        res = ctx.obj['client'].get_requests(type)
-        if json:
-            click.echo(dumps(res, indent=2))
-        else:
-            output_requests(res)
 
 @cli.command(name='delete')
 @click.argument('request-id')
@@ -88,6 +81,17 @@ def request_delete(ctx, request_id):
         click.echo('error during delete request {0}: {1}'.format(request_id, res['error']))
     else:
         click.echo('deleted request {0} to {1}'.format(request_id, instances))
+
+@cli.command(name='list')
+@click.option('--type', '-t', default='all', type=click.Choice(['pending', 'cleanup', 'paused', 'finished', 'cooldown', 'active', 'all']), help='Request type to get')
+@click.option('--json', '-j', is_flag=True, help='Enable json output')
+@click.pass_context
+def request_list(ctx, type, json):
+    res = ctx.obj['client'].get_requests(type)
+    if json:
+        click.echo(dumps(res, indent=2))
+    else:
+        output_requests(res)
 
 @cli.command(name='sync')
 @click.option('--file', '-f', type=click.File('r'), help='JSON request/deploy file to sync')
