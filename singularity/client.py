@@ -77,4 +77,4 @@ class Client(object):
     # deploys api
     def create_deploy(self, deploy):
         url = '{0}/api/deploys'.format(self.url)
-        return _response(session.post(url, data=dumps({'deploy': deploy})))
+        return _response(self.session.post(url, data=json.dumps({'deploy': deploy})))

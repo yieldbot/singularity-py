@@ -7,6 +7,10 @@ A CLI for the Singularity REST API with some opinionated configuration managemen
 If you don't use `pipsi`, you're missing out.
 Here are [installation instructions](https://github.com/mitsuhiko/pipsi#readme).
 
+After setting up `pipsi` you may need to add the following to your PATH environment variable:
+
+`$HOME/bin:$HOME/.local/bin`
+
 Simply run:
 
     $ pipsi install .

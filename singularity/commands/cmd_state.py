@@ -12,11 +12,11 @@ def cli(ctx, underprovisioned, overprovisioned, json):
     if underprovisioned:
         res = ctx.obj['client'].get_state_underprovisioned()
         #TODO: provide non json output
-        click.echo(json.dumps(res, indent=2))
+        click.echo(dumps(res, indent=2))
     elif overprovisioned:
         res = ctx.obj['client'].get_state_overprovisioned()
         #TODO: provide non json output
-        click.echo(json.dumps(res, indent=2))
+        click.echo(dumps(res, indent=2))
     else:
         res = ctx.obj['client'].get_state()
     	if json:

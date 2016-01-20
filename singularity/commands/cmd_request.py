@@ -109,7 +109,7 @@ def request_sync(ctx, file, dir):
 def sync_request(client, request):
     singularity_request = client.upsert_request(request['request'])
     if 'error' in singularity_request:
-        click.echo('error during sync request: {0}'.format(res['error']))
+        click.echo('error during sync request: {0}'.format(singularity_request['error']))
     else:
         click.echo('syncronized request {0}'.format(request['request']['id']))
     if 'deploy' in request:
