@@ -64,7 +64,7 @@ def request_bounce(ctx, request_id):
 @click.argument('request-id')
 @click.option('--json', '-j', is_flag=True, help='Enable json output')
 @click.pass_context
-def request_get(ctx, request_id, type, json):
+def request_get(ctx, request_id, json):
     if request_id:
         res = ctx.obj['client'].get_request(request_id)
         if json:
