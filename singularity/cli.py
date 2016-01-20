@@ -27,13 +27,13 @@ class MultiCommandCLI(click.MultiCommand):
         return mod.cli
 
 @click.command(cls=MultiCommandCLI)
-@click.option('--url', '-u', envvar='SINGULARITY_URL', default='http://localhost:7099', help='Singularity host url')
+@click.option('--host', '-h', envvar='SINGULARITY_HOST', default='http://localhost:7099', help='Singularity host url')
 @click.option('--insecure', '-k', is_flag=True, envvar='SINGULARITY_INSECURE', help='Allow connections to SSL sites without certs (H)')
 @click.version_option()
 @click.pass_context
-def cli(ctx, url, insecure):
+def cli(ctx, host, insecure):
     """Opinionated CLI for Singularity PAAS"""
-    ctx.obj = {'client': client.Client(url, insecure)}
+    ctx.obj = {'client': client.Client(host, insecure)}
     
 
 # TODO: singularity history api
