@@ -2,18 +2,23 @@
 Opinionated CLI for Singularity PAAS
 """
 from setuptools import find_packages, setup
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+except(IOError, ImportError):
+    long_description = open('README.md').read()
 
 dependencies = ['click', 'requests', 'tabulate']
 
 setup(
-    name='singularity',
+    name='singularity-cli',
     version='0.1.0',
     url='https://github.com/yieldbot/singularity-py',
     license='BSD',
     author='Dave White',
     author_email='dwhite@yieldbot.com',
     description='Opinionated CLI for Singularity PAAS',
-    long_description=__doc__,
+    long_description=long_description,
     download_url='https://github.com/yieldbot/singularity-py/tarball/0.1.0',
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
