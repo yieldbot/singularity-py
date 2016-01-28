@@ -118,6 +118,8 @@ def sync_request(client, request):
         click.echo('syncronized request {0}'.format(request['request']['id']))
     if 'deploy' in request:
         file_deploy_id = request['deploy'].get('id', None)
+        # always set deploy.requestId to request.id from json file
+        request['deploy']['requestId'] = request['request']['id']
         if 'activeDeploy' in singularity_request:
             singularity_deploy_id = singularity_request['activeDeploy'].get('id', None)
             if file_deploy_id != singularity_deploy_id:
