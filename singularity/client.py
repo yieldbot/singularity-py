@@ -59,7 +59,7 @@ class Client(object):
 
     def delete_request(self, request_id):
         url = '{0}/api/requests/request/{1}'.format(self.host, request_id)
-        return _response(ctx.obj['session'].delete(url))
+        return _response(self.session.delete(url))
 
     def upsert_request(self, request):
         url = '{0}/api/requests'.format(self.host)

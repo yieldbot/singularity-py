@@ -8,7 +8,7 @@ from tabulate import tabulate
 def cli(ctx):
     pass
 
-@cli.command(name='unpause')
+@cli.command(name='unpause', help='Unpause a request')
 @click.argument('request-id')
 @click.pass_context
 def request_unpause(ctx, request_id):
@@ -18,7 +18,7 @@ def request_unpause(ctx, request_id):
     else:
         click.echo('unpaused request {0}'.format(request_id))
 
-@cli.command(name='run')
+@cli.command(name='run', help='Run a on-demand request now')
 @click.argument('request-id')
 @click.pass_context
 def request_run(ctx, request_id):
@@ -28,7 +28,7 @@ def request_run(ctx, request_id):
     else:
         click.echo('running request {0}'.format(request_id))
 
-@cli.command(name='pause')
+@cli.command(name='pause', help='Pause a request')
 @click.option('--kill-tasks', '-k', is_flag=True, default=False, help='Kill tasks when paused')
 @click.argument('request-id')
 @click.pass_context
@@ -39,7 +39,7 @@ def request_pause(ctx, request_id, kill_tasks):
     else:
         click.echo('paused request {0} with killTasks={1}'.format(request_id, kill_tasks))
 
-@cli.command(name='instances')
+@cli.command(name='instances', help='Scale a request up/down')
 @click.argument('request-id')
 @click.argument('instances', '-i', type=click.INT)
 @click.pass_context
@@ -50,7 +50,7 @@ def request_instances(ctx, request_id, instances):
     else:
         click.echo('setting instances to {0} for request {1}'.format(instances, request_id))
 
-@cli.command(name='bounce')
+@cli.command(name='bounce', help='Restart a request tasks')
 @click.argument('request-id')
 @click.pass_context
 def request_bounce(ctx, request_id):
@@ -60,7 +60,7 @@ def request_bounce(ctx, request_id):
     else:
         click.echo('bounced request {0}'.format(request_id))
 
-@cli.command(name='get')
+@cli.command(name='get', help='Get the state of a request')
 @click.argument('request-id')
 @click.option('--json', '-j', is_flag=True, help='Enable json output')
 @click.pass_context
@@ -72,7 +72,7 @@ def request_get(ctx, request_id, json):
         else:
             output_request(res)
 
-@cli.command(name='delete')
+@cli.command(name='delete', help='Remove a request')
 @click.argument('request-id')
 @click.pass_context
 def request_delete(ctx, request_id):
@@ -80,9 +80,9 @@ def request_delete(ctx, request_id):
     if 'error' in res:
         click.echo('error during delete request {0}: {1}'.format(request_id, res['error']))
     else:
-        click.echo('deleted request {0} to {1}'.format(request_id, instances))
+        click.echo('deleted request {0}'.format(request_id))
 
-@cli.command(name='list')
+@cli.command(name='list', help='Get a list of requests')
 @click.option('--type', '-t', default='all', type=click.Choice(['pending', 'cleanup', 'paused', 'finished', 'cooldown', 'active', 'all']), help='Request type to get')
 @click.option('--json', '-j', is_flag=True, help='Enable json output')
 @click.pass_context
@@ -93,7 +93,7 @@ def request_list(ctx, type, json):
     else:
         output_requests(res)
 
-@cli.command(name='sync')
+@cli.command(name='sync', help='Sync one or more requests/deploys')
 @click.option('--file', '-f', type=click.File('r'), help='JSON request/deploy file to sync')
 @click.option('--dir',  '-d', type=click.Path(), help='Directory of JSON request/deploy files to sync')
 @click.pass_context
@@ -134,6 +134,21 @@ def sync_deploy(client, deploy):
     else:
         click.echo('syncronized deploy {0} for request {1}'.format(deploy['id'], deploy['requestId']))
     return res
+
+@cli.command(name='clean', help='Remove requests not in the specified directory')
+@click.argument('dir', type=click.Path())
+@click.pass_context
+def request_clean(ctx, dir):
+    client = ctx.obj['client']
+    requests = client.get_requests('active')
+    for request in requests:
+        request_id = request['request']['id']
+        if not os.path.isfile(os.path.join(dir, '{0}.json'.format(request_id))):
+            res = client.delete_request(request_id)
+            if 'error' in res:
+                click.echo('error during delete request {0}: {1}'.format(request_id, res['error']))
+            else:
+                click.echo('deleted request {0} to {1}'.format(request_id, instances))
 
 def output_request(request):
     request_output = [

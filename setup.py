@@ -12,7 +12,7 @@ dependencies = ['click', 'requests', 'tabulate']
 
 setup(
     name='singularity-cli',
-    version='0.1.0',
+    version='0.1.1',
     url='https://github.com/yieldbot/singularity-py',
     license='BSD',
     author='Dave White',
