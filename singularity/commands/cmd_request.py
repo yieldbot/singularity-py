@@ -39,12 +39,12 @@ def request_pause(ctx, request_id, kill_tasks):
     else:
         click.echo('paused request {0} with killTasks={1}'.format(request_id, kill_tasks))
 
-@cli.command(name='instances', help='Scale a request up/down')
+@cli.command(name='scale', help='Scale a request up/down')
 @click.argument('request-id')
 @click.argument('instances', '-i', type=click.INT)
 @click.pass_context
-def request_instances(ctx, request_id, instances):
-    res = ctx.obj['client'].set_instances_request(request_id, instances)
+def request_scale(ctx, request_id, instances):
+    res = ctx.obj['client'].scale_request(request_id, instances)
     if 'error' in res:
         click.echo('error during set instances for request {0}: {1}'.format(request_id, res['error']))
     else:
@@ -111,21 +111,32 @@ def request_sync(ctx, file, dir):
         click.echo('Either --file or --dir is required')
 
 def sync_request(client, request):
-    singularity_request = client.upsert_request(request['request'])
-    if 'error' in singularity_request:
-        click.echo('error during sync request: {0}'.format(singularity_request['error']))
-    else:
-        click.echo('syncronized request {0}'.format(request['request']['id']))
-    if 'deploy' in request:
-        file_deploy_id = request['deploy'].get('id', None)
-        # always set deploy.requestId to request.id from json file
-        request['deploy']['requestId'] = request['request']['id']
-        if 'activeDeploy' in singularity_request:
-            singularity_deploy_id = singularity_request['activeDeploy'].get('id', None)
-            if file_deploy_id != singularity_deploy_id:
-                sync_deploy(client, request['deploy'])
+    requested_instances = request['request'].get('instances', 1)
+    if requested_instances == 0:
+        singularity_request = client.pause_request(request['request']['id'], kill_tasks=True)
+        if 'error' in singularity_request:
+            click.echo('error during sync request: {0}'.format(singularity_request['error']))
         else:
-            sync_deploy(client, request['deploy'])
+            click.echo('syncronized request {0}'.format(request['request']['id']))
+    else:
+        singularity_request = client.get_request(request['request']['id'])
+        if singularity_request and singularity_request['state'] == 'PAUSED' and requested_instances > 0:
+            client.unpause_request(request['request']['id'])
+        singularity_request = client.upsert_request(request['request'])
+        if 'error' in singularity_request:
+            click.echo('error during sync request: {0}'.format(singularity_request['error']))
+        else:
+            click.echo('syncronized request {0}'.format(request['request']['id']))
+        if 'deploy' in request:
+            file_deploy_id = request['deploy'].get('id', None)
+            # always set deploy.requestId to request.id from json file
+            request['deploy']['requestId'] = request['request']['id']
+            if 'activeDeploy' in singularity_request:
+                singularity_deploy_id = singularity_request['activeDeploy'].get('id', None)
+                if file_deploy_id != singularity_deploy_id:
+                    sync_deploy(client, request['deploy'])
+            else:
+                sync_deploy(client, request['deploy'])
 
 def sync_deploy(client, deploy):
     res = client.create_deploy(deploy)

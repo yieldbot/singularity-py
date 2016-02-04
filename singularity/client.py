@@ -31,9 +31,10 @@ class Client(object):
         return _response(self.session.get(url))
 
     # requests api
-    def unpause_request(self, request_id):
+    def unpause_request(self, request_id, message=""):
+        data = {'message': message}
         url = '{0}/api/requests/request/{1}/unpause'.format(self.host, request_id)
-        return _response(self.session.post(url))
+        return _response(self.session.post(url, data=json.dumps(data)))
 
     def run_request(self, request_id):
         url = '{0}/api/requests/request/{1}/run'.format(self.host, request_id)
@@ -44,9 +45,9 @@ class Client(object):
         url = '{0}/api/requests/request/{1}/pause'.format(self.host, request_id)
         return _response(self.session.post(url, data=json.dumps(data)))
 
-    def set_instances_request(self, request_id, instances):
+    def scale_request(self, request_id, instances):
         data = {'id': request_id, 'instances': instances}
-        url = '{0}/api/requests/request/{1}/instances'.format(self.host, request_id)
+        url = '{0}/api/requests/request/{1}/scale'.format(self.host, request_id)
         return _response(self.session.put(url, data=json.dumps(data)))
 
     def bounce_request(self, request_id):
