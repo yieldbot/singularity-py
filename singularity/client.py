@@ -5,7 +5,7 @@ def _response(res):
     try:
         return res.json()
     except:
-        return {'error': res.text}
+        return {'error': res.text, 'status_code': res.status_code}
 
 class Client(object):
 

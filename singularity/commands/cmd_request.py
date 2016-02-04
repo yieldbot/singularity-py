@@ -120,8 +120,11 @@ def sync_request(client, request):
             click.echo('syncronized request {0}'.format(request['request']['id']))
     else:
         singularity_request = client.get_request(request['request']['id'])
-        if singularity_request and singularity_request['state'] == 'PAUSED' and requested_instances > 0:
-            client.unpause_request(request['request']['id'])
+        if 'error' in singularity_request and singularity_request['status_code'] == 404:
+            pass # request didn't exist before
+        else:
+            if singularity_request and singularity_request['state'] == 'PAUSED' and requested_instances > 0:
+                client.unpause_request(request['request']['id'])
         singularity_request = client.upsert_request(request['request'])
         if 'error' in singularity_request:
             click.echo('error during sync request: {0}'.format(singularity_request['error']))
