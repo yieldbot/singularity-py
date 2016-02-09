@@ -119,12 +119,16 @@ def sync_request(client, request):
         else:
             click.echo('syncronized request {0}'.format(request['request']['id']))
     else:
+        isPaused = False
         singularity_request = client.get_request(request['request']['id'])
         if 'error' in singularity_request and singularity_request['status_code'] == 404:
             pass # request didn't exist before
         else:
             if singularity_request and singularity_request['state'] == 'PAUSED' and requested_instances > 0:
-                client.unpause_request(request['request']['id'])
+                isPaused = True
+                if not request.get('deploy', {}).get('pauseBeforeDeploy', False):
+                    client.unpause_request(request['request']['id'])
+                    isPaused = False
         singularity_request = client.upsert_request(request['request'])
         if 'error' in singularity_request:
             click.echo('error during sync request: {0}'.format(singularity_request['error']))
@@ -137,17 +141,42 @@ def sync_request(client, request):
             if 'activeDeploy' in singularity_request:
                 singularity_deploy_id = singularity_request['activeDeploy'].get('id', None)
                 if file_deploy_id != singularity_deploy_id:
-                    sync_deploy(client, request['deploy'])
+                    sync_deploy(client, request['deploy'], isPaused)
             else:
-                sync_deploy(client, request['deploy'])
+                sync_deploy(client, request['deploy'], isPaused)
 
-def sync_deploy(client, deploy):
-    res = client.create_deploy(deploy)
+def sync_deploy(client, deploy, isPaused):
+    unpauseOnSuccessfulDeploy = False
+    if deploy.get('pauseBeforeDeploy', False):
+        del deploy['pauseBeforeDeploy']
+        unpauseOnSuccessfulDeploy = True
+        if not isPaused:
+            pause_deploy_and_wait(client, deploy)
+
+    res = client.create_deploy(deploy, unpauseOnSuccessfulDeploy)
     if 'error' in res:
         click.echo('error during sync deploy: {0}'.format(res['error']))
     else:
         click.echo('syncronized deploy {0} for request {1}'.format(deploy['id'], deploy['requestId']))
+
     return res
+
+def pause_deploy_and_wait(client, deploy):
+    singularity_request = client.pause_request(deploy['requestId'], kill_tasks=True)
+    if 'error' in singularity_request:
+        click.echo('error during pause request: {0}'.format(singularity_request['error']))
+    else:
+        click.echo('pausing request {0} before deploy'.format(deploy['requestId']))
+    if singularity_request:
+        active_deploy_id = singularity_request.get('activeDeploy', {}).get('id', None)
+        if active_deploy_id:
+            no_tasks = False
+            while not no_tasks:
+                tasks = client.get_active_deploy_tasks(deploy['requestId'], active_deploy_id)
+                if len(tasks) == 0:
+                    no_tasks = True
+        click.echo('killed all tasks for request {0}'.format(deploy['requestId']))
+
 
 @cli.command(name='clean', help='Remove requests not in the specified directory')
 @click.argument('dir', type=click.Path())

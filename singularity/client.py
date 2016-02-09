@@ -76,14 +76,19 @@ class Client(object):
         return _response(self.session.get(url))
 
     # deploys api
-    def create_deploy(self, deploy):
+    def create_deploy(self, deploy, unpauseOnSuccessfulDeploy=False):
+        data = {'deploy': deploy, 'unpauseOnSuccessfulDeploy': unpauseOnSuccessfulDeploy}
         url = '{0}/api/deploys'.format(self.host)
-        return _response(self.session.post(url, data=json.dumps({'deploy': deploy})))
+        return _response(self.session.post(url, data=json.dumps(data)))
 
     # tasks api
     def get_tasks(self, type, slave_id):
         url = '{0}/api/tasks/{1}'.format(self.host, type)
         if type == 'active' and slave_id:
             url = '{0}/slave/{1}'.format(url, slave_id)
+        return _response(self.session.get(url))
+
+    def get_active_deploy_tasks(self, request_id, deploy_id):
+        url = '{0}/api/history/request/{1}/deploy/{2}/tasks/active'.format(self.host, request_id, deploy_id)
         return _response(self.session.get(url))
 
