@@ -191,7 +191,7 @@ def request_clean(ctx, dir):
             if 'error' in res:
                 click.echo('error during delete request {0}: {1}'.format(request_id, res['error']))
             else:
-                click.echo('deleted request {0} to {1}'.format(request_id, instances))
+                click.echo('deleted request {0}'.format(request_id))
 
 def output_request(request):
     request_output = [
