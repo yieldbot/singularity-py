@@ -58,9 +58,10 @@ class Client(object):
         url = '{0}/api/requests/request/{1}'.format(self.host, request_id)
         return _response(self.session.get(url))
 
-    def delete_request(self, request_id):
+    def delete_request(self, request_id, message="", actionId=""):
+        data = {'message': message, 'actionId': actionId}
         url = '{0}/api/requests/request/{1}'.format(self.host, request_id)
-        return _response(self.session.delete(url))
+        return _response(self.session.delete(url, data=json.dumps(data)))
 
     def upsert_request(self, request):
         url = '{0}/api/requests'.format(self.host)
