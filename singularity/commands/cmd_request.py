@@ -183,7 +183,7 @@ def pause_deploy_and_wait(client, deploy):
 @click.pass_context
 def request_clean(ctx, dir):
     client = ctx.obj['client']
-    requests = client.get_requests('active')
+    requests = client.get_requests('all')
     for request in requests:
         request_id = request['request']['id']
         if not os.path.isfile(os.path.join(dir, '{0}.json'.format(request_id))):
