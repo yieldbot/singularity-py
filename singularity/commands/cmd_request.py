@@ -1,6 +1,7 @@
 import click
 from json import dumps, load
 import os
+import sys
 from tabulate import tabulate
 
 @click.group('request')
@@ -98,17 +99,33 @@ def request_list(ctx, type, json):
 @click.option('--dir',  '-d', type=click.Path(), help='Directory of JSON request/deploy files to sync')
 @click.pass_context
 def request_sync(ctx, file, dir):
+    had_error = False
     client = ctx.obj['client']
     if file:
-        file_request = load(file)
-        sync_request(client, file_request)
+        file_request = None
+        try:
+            file_request = load(file)
+        except ValueError as e:
+            click.echo('json parse error: {0}'.format(e))
+            had_error = True
+        if file_request:
+            sync_request(client, file_request)
     elif dir:
         for filename in os.listdir(dir):
             if filename.endswith('json'):
                 with open(os.path.join(dir, filename)) as file:
-                    sync_request(client, load(file))
+                    file_request = None
+                    try:
+                        file_request = load(file)
+                    except ValueError as e:
+                        click.echo('json parse error: {0}'.format(e))
+                        had_error = True
+                    if file_request:
+                        sync_request(client, file_request)
     else:
         click.echo('Either --file or --dir is required')
+    if had_error:
+        sys.exit(1)
 
 def sync_request(client, request):
     requested_instances = request['request'].get('instances', 1)
