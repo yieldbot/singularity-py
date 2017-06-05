@@ -106,7 +106,7 @@ def request_sync(ctx, file, dir):
         try:
             file_request = load(file)
         except ValueError as e:
-            click.echo('json parse error: {0}'.format(e))
+            click.echo('json parse error: {0} in {1}'.format(e, file))
             had_error = True
         if file_request:
             sync_request(client, file_request)
@@ -118,7 +118,7 @@ def request_sync(ctx, file, dir):
                     try:
                         file_request = load(file)
                     except ValueError as e:
-                        click.echo('json parse error: {0}'.format(e))
+                        click.echo('json parse error: {0} in {1}'.format(e, filename))
                         had_error = True
                     if file_request:
                         sync_request(client, file_request)
