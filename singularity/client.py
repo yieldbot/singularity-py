@@ -3,7 +3,11 @@ import requests
 
 def _response(res):
     try:
-        return res.json()
+        response = res.json()
+        if 'message' in response and 'code' in response and response.code != 200:
+            return {'error': response.message, 'status_code': res.status_code}
+        else:
+            return response
     except:
         return {'error': res.text, 'status_code': res.status_code}
 
